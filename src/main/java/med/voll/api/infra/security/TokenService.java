@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 
 import med.voll.api.domain.usuario.Usuario;
 
@@ -35,6 +36,23 @@ public class TokenService {
 
 	private Instant dataExpiracao() {
 		return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.UTC.of("-03:00"));
+	}
+	
+	public String getSubject(String tokenJWT) {
+		try {
+			Algorithm algorithm = Algorithm.HMAC256(secret);
+		    return JWT.require(algorithm)
+		        // specify an specific claim validations
+		        .withIssuer("APIVOLLMED")
+		        // reusable verifier instance
+		        .build()
+		        .verify(tokenJWT)
+		        .getSubject();
+		        
+		} catch (JWTVerificationException exception){
+			throw new RuntimeException("Token inválido ou expirado");
+		}
+		
 	}
 
 }
